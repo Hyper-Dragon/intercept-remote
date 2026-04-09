@@ -234,7 +234,12 @@ def get_tasks():
     Query params: state, agent_id, mode, limit
     """
     state_str = request.args.get('state')
-    state = TaskState(state_str) if state_str else None
+    state = None
+    if state_str:
+        try:
+            state = TaskState(state_str)
+        except ValueError:
+            return api_error(f'Invalid state: {state_str}', 400)
     agent_id = request.args.get('agent_id', type=int)
     mode = request.args.get('mode')
     limit = request.args.get('limit', 50, type=int)

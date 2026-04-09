@@ -188,14 +188,16 @@ class ResourceManager:
         for dev in devices:
             device_id = str(dev.get('device_id', dev.get('index', dev.get('id', ''))))
             device_type = dev.get('type', dev.get('device_type', 'unknown'))
-            if device_id:
-                key = self.register_resource(
-                    agent_id=agent_id,
-                    device_id=device_id,
-                    device_type=device_type,
-                    device_info=dev,
-                )
-                keys.append(key)
+            if not device_id:
+                logger.warning("Skipping device with no valid identifier: %s", dev)
+                continue
+            key = self.register_resource(
+                agent_id=agent_id,
+                device_id=device_id,
+                device_type=device_type,
+                device_info=dev,
+            )
+            keys.append(key)
         return keys
 
     def unregister_agent_resources(self, agent_id: int) -> int:

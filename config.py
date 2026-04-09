@@ -509,6 +509,8 @@ ADMIN_PASSWORD = _get_env('ADMIN_PASSWORD', 'admin')
 # live agent capabilities.  In 'local' mode the static mode list is retained
 # for users running Intercept as a standalone SDR workstation.
 DEPLOYMENT_MODE = _get_env('DEPLOYMENT_MODE', 'remote')
+if DEPLOYMENT_MODE not in ('remote', 'local'):
+    DEPLOYMENT_MODE = 'remote'
 
 # Fleet / capability aggregator settings
 AGENT_OFFLINE_THRESHOLD_SECONDS = _get_env_float('AGENT_OFFLINE_THRESHOLD', 120.0)
