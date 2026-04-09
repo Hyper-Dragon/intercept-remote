@@ -19,6 +19,7 @@ def register_blueprints(app):
     from .controller import controller_bp
     from .correlation import correlation_bp
     from .dsc import dsc_bp
+    from .fleet import fleet_bp
     from .gps import gps_bp
     from .ground_station import ground_station_bp
     from .listening_post import receiver_bp
@@ -72,6 +73,7 @@ def register_blueprints(app):
     app.register_blueprint(tscm_bp)
     app.register_blueprint(spy_stations_bp)
     app.register_blueprint(controller_bp)  # Remote agent controller
+    app.register_blueprint(fleet_bp)  # Fleet capability API (remote-first)
     app.register_blueprint(offline_bp)  # Offline mode settings
     app.register_blueprint(updater_bp)  # GitHub update checking
     app.register_blueprint(sstv_bp)  # ISS SSTV decoder

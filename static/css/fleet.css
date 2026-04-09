@@ -1,0 +1,92 @@
+/* =================================================================
+   Fleet Capability Styles
+   Styles for capability-driven UI elements and state badges.
+   ================================================================= */
+
+/* Fleet status badge in navbar */
+.fleet-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-family: var(--font-mono, monospace);
+    color: var(--text-secondary, #888);
+    background: var(--bg-card, rgba(255,255,255,0.05));
+    border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+    cursor: default;
+    user-select: none;
+}
+
+/* Fleet dot indicator */
+.fleet-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-secondary, #888);
+}
+
+.fleet-dot--online {
+    background: #22c55e;
+    box-shadow: 0 0 4px rgba(34, 197, 94, 0.5);
+}
+
+.fleet-dot--partial {
+    background: #f59e0b;
+    box-shadow: 0 0 4px rgba(245, 158, 11, 0.5);
+}
+
+.fleet-dot--offline {
+    background: #ef4444;
+    box-shadow: 0 0 4px rgba(239, 68, 68, 0.3);
+}
+
+/* ---- Mode button fleet states ---- */
+
+/* Hidden: no agent supports this mode */
+.fleet-hidden {
+    display: none !important;
+}
+
+/* Offline: agents support it but all are offline */
+.fleet-offline {
+    opacity: 0.4;
+    pointer-events: none;
+    position: relative;
+}
+
+.fleet-offline::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ef4444;
+}
+
+/* Busy: agents support it but resources occupied */
+.fleet-busy {
+    opacity: 0.7;
+    position: relative;
+}
+
+.fleet-busy::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #f59e0b;
+}
+
+/* Unavailable: generic disabled state */
+.fleet-unavailable {
+    opacity: 0.35;
+    pointer-events: none;
+}

@@ -40,7 +40,14 @@ from flask import (
 )
 from werkzeug.security import check_password_hash
 
-from config import CHANGELOG, DEFAULT_LATITUDE, DEFAULT_LONGITUDE, SHARED_OBSERVER_LOCATION_ENABLED, VERSION
+from config import (
+    CHANGELOG,
+    DEFAULT_LATITUDE,
+    DEFAULT_LONGITUDE,
+    DEPLOYMENT_MODE,
+    SHARED_OBSERVER_LOCATION_ENABLED,
+    VERSION,
+)
 from utils.cleanup import DataStore, cleanup_manager
 from utils.constants import (
     MAX_AIRCRAFT_AGE_SECONDS,
@@ -499,6 +506,7 @@ def index() -> str:
         shared_observer_location=SHARED_OBSERVER_LOCATION_ENABLED,
         default_latitude=DEFAULT_LATITUDE,
         default_longitude=DEFAULT_LONGITUDE,
+        deployment_mode=DEPLOYMENT_MODE,
     )
 
 

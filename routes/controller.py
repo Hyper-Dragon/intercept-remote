@@ -21,6 +21,7 @@ import requests
 from flask import Blueprint, Response, jsonify, request
 
 from utils.agent_client import AgentClient, AgentConnectionError, AgentHTTPError, create_client_from_agent
+from utils.capability_aggregator import fleet_aggregator
 from utils.database import (
     create_agent,
     delete_agent,
@@ -171,6 +172,16 @@ def register_agent():
         message = 'Agent registered successfully'
         if capabilities is None:
             message += ' (could not connect - agent may be offline)'
+
+        # Sync capability aggregator
+        fleet_aggregator.update_agent(
+            agent_id=agent_id,
+            agent_name=name,
+            capabilities=capabilities,
+            interfaces=interfaces,
+            is_online=capabilities is not None,
+        )
+
         return jsonify({
             'status': 'success',
             'message': message,
@@ -248,6 +259,7 @@ def remove_agent(agent_id: int):
         return api_error('Agent not found', 404)
 
     delete_agent(agent_id)
+    fleet_aggregator.remove_agent(agent_id)
     return jsonify({'status': 'success', 'message': 'Agent deleted'})
 
 
@@ -275,6 +287,23 @@ def refresh_agent_metadata(agent_id: int):
                 interfaces=agent_interfaces,
                 update_last_seen=True
             )
+
+            # Sync capability aggregator
+            running_modes = []
+            status = metadata.get('status') or {}
+            if isinstance(status, dict):
+                running_modes = status.get('running_modes', [])
+
+            fleet_aggregator.update_agent(
+                agent_id=agent_id,
+                agent_name=agent['name'],
+                capabilities=caps.get('modes'),
+                interfaces=agent_interfaces,
+                is_online=True,
+                running_modes=running_modes,
+                gps_coords=agent.get('gps_coords'),
+            )
+
             agent = get_agent(agent_id)
             return jsonify({
                 'status': 'success',
@@ -282,9 +311,11 @@ def refresh_agent_metadata(agent_id: int):
                 'metadata': metadata
             })
         else:
+            fleet_aggregator.mark_agent_offline(agent_id)
             return api_error('Agent is not reachable', 503)
 
     except (AgentHTTPError, AgentConnectionError) as e:
+        fleet_aggregator.mark_agent_offline(agent_id)
         return api_error(f'Failed to reach agent: {e}', 503)
 
 
@@ -364,6 +395,19 @@ def check_all_agents_health():
                     result['running_modes_detail'] = status.get('running_modes_detail', {})
                 except Exception:
                     pass  # Status fetch is optional
+
+                # Sync capability aggregator
+                fleet_aggregator.update_agent(
+                    agent_id=agent['id'],
+                    agent_name=agent['name'],
+                    capabilities=agent.get('capabilities'),
+                    interfaces=agent.get('interfaces'),
+                    is_online=True,
+                    running_modes=result.get('running_modes', []),
+                    gps_coords=agent.get('gps_coords'),
+                )
+            else:
+                fleet_aggregator.mark_agent_offline(agent['id'])
 
         except AgentConnectionError as e:
             result['error'] = f'Connection failed: {str(e)}'

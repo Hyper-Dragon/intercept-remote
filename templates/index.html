@@ -66,6 +66,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/ux-platform.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/signal-waveform.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/core/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fleet.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/modes/waterfall.css') }}?v={{ version }}&r=wfdeck19">
     <!-- Deferred scripts - Leaflet, Chart.js, observer-location -->
     <script defer src="{{ url_for('static', filename='js/core/observer-location.js') }}"></script>
@@ -16564,6 +16565,16 @@
 
     window.addEventListener('DOMContentLoaded', () => {
         setTimeout(consumePendingWeatherSatHandoff, 250);
+    });
+    </script>
+
+    {# Fleet capability manager (remote-first mode) #}
+    <script src="{{ url_for('static', filename='js/fleet.js') }}"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof Fleet !== 'undefined' && Fleet.init) {
+            Fleet.init();
+        }
     });
     </script>
 </body>
