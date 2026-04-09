@@ -772,6 +772,103 @@ def init_db() -> None:
         if 'tasks_json' not in profile_cols:
             conn.execute('ALTER TABLE observation_profiles ADD COLUMN tasks_json TEXT')
 
+        # =====================================================================
+        # Fleet / History Tables (remote-agent-first architecture)
+        # =====================================================================
+
+        # Central intercept history – master record for all captures
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS intercept_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                agent_id INTEGER,
+                agent_name TEXT,
+                mode TEXT NOT NULL,
+                started_at TIMESTAMP,
+                ended_at TIMESTAMP,
+                latitude REAL,
+                longitude REAL,
+                location_label TEXT,
+                summary TEXT,
+                decoded_output TEXT,
+                raw_artifact_path TEXT,
+                retention_policy TEXT DEFAULT 'standard',
+                metadata TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (agent_id) REFERENCES agents(id)
+            )
+        ''')
+
+        conn.execute('''
+            CREATE INDEX IF NOT EXISTS idx_history_mode
+            ON intercept_history(mode)
+        ''')
+
+        conn.execute('''
+            CREATE INDEX IF NOT EXISTS idx_history_agent
+            ON intercept_history(agent_id)
+        ''')
+
+        conn.execute('''
+            CREATE INDEX IF NOT EXISTS idx_history_started
+            ON intercept_history(started_at)
+        ''')
+
+        # Tasks / jobs – tracks work assigned to agents
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS tasks (
+                id TEXT PRIMARY KEY,
+                mode TEXT NOT NULL,
+                agent_id INTEGER,
+                agent_name TEXT,
+                lease_id TEXT,
+                state TEXT NOT NULL DEFAULT 'pending',
+                params TEXT,
+                result_summary TEXT,
+                artifact_ids TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                assigned_at TIMESTAMP,
+                started_at TIMESTAMP,
+                completed_at TIMESTAMP,
+                error_message TEXT,
+                FOREIGN KEY (agent_id) REFERENCES agents(id)
+            )
+        ''')
+
+        conn.execute('''
+            CREATE INDEX IF NOT EXISTS idx_tasks_state
+            ON tasks(state)
+        ''')
+
+        conn.execute('''
+            CREATE INDEX IF NOT EXISTS idx_tasks_agent
+            ON tasks(agent_id)
+        ''')
+
+        # Agent buffers – store-and-forward for partition tolerance
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS agent_buffers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                agent_id INTEGER NOT NULL,
+                agent_name TEXT,
+                scan_type TEXT NOT NULL,
+                payload TEXT NOT NULL,
+                buffered_at TIMESTAMP NOT NULL,
+                synced_at TIMESTAMP,
+                retry_count INTEGER DEFAULT 0,
+                FOREIGN KEY (agent_id) REFERENCES agents(id)
+            )
+        ''')
+
+        conn.execute('''
+            CREATE INDEX IF NOT EXISTS idx_buffers_agent
+            ON agent_buffers(agent_id)
+        ''')
+
+        conn.execute('''
+            CREATE INDEX IF NOT EXISTS idx_buffers_synced
+            ON agent_buffers(synced_at)
+        ''')
+
         logger.info("Database initialized successfully")
 
 

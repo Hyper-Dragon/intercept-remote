@@ -504,6 +504,18 @@ ALERT_WEBHOOK_TIMEOUT = _get_env_int('ALERT_WEBHOOK_TIMEOUT', 5)
 ADMIN_USERNAME = _get_env('ADMIN_USERNAME', 'admin')
 ADMIN_PASSWORD = _get_env('ADMIN_PASSWORD', 'admin')
 
+# Deployment mode: 'remote' (control-plane only) or 'local' (legacy single-box)
+# In 'remote' mode the host acts as a control plane and the UI is driven by
+# live agent capabilities.  In 'local' mode the static mode list is retained
+# for users running Intercept as a standalone SDR workstation.
+DEPLOYMENT_MODE = _get_env('DEPLOYMENT_MODE', 'remote')
+if DEPLOYMENT_MODE not in ('remote', 'local'):
+    DEPLOYMENT_MODE = 'remote'
+
+# Fleet / capability aggregator settings
+AGENT_OFFLINE_THRESHOLD_SECONDS = _get_env_float('AGENT_OFFLINE_THRESHOLD', 120.0)
+RESOURCE_LEASE_TTL_SECONDS = _get_env_float('RESOURCE_LEASE_TTL', 300.0)
+
 
 def configure_logging() -> None:
     """Configure application logging."""
